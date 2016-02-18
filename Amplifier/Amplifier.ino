@@ -1,6 +1,3 @@
-/*
- * Arduino based front-end using serial communication, 16x2LCD, potentiometer, encoder, 2x MSGEQ7, PT2322 board
- */
 
 #include <LiquidCrystal_I2C.h>
 #include <Encoder.h>
@@ -32,8 +29,10 @@
 #define ROWS 2       // number of display rows
 #define COLS 16      // number of display columns
 
-String InputNames[4] = { "Li1", "Li2", "USB", "BT " }; //names of the inputs
-String ToneNames[4] = { "BASS", "MIDDLE", "TRBLE", "VOLUME" }; //names of the inputs
+String InputNames[4]  = { "Li1", "Li2", "USB", "BT " }; //names of the inputs
+String ToneNames[4]   = { "BASS", "MIDDLE", "TRBLE", "VOLUME" }; //names of the inputs
+String DispStrings[4]     = {"", "", "", ""};
+String Old_DispStrings[4] = {"", "", "", ""};
 
 #define MIN_VOLUME 0 // dB
 #define MAX_VOLUME 100   // dB
@@ -313,7 +312,9 @@ void AppTone(unsigned long current, int tone_to_change) {
       }
     }
   //lcd.setCursor(0,0);
-  update_display(0, ToneNames[tone_to_change] + " " + tones[tone_to_change] + " " + InputNames[input_source]);
+  DispStrings[0] = ToneNames[tone_to_change] + " " + tones[tone_to_change];
+  DispStrings[1] = InputNames[input_source];
+  //update_display(0, ToneNames[tone_to_change] + " " + tones[tone_to_change] + " " + InputNames[input_source]);
   //lcd.print(ToneNames[tone_to_change]);
   //lcd.print(" ");
   //lcd.print(tones[tone_to_change]);
@@ -351,6 +352,7 @@ void loop() {
 
   unsigned long current = millis();
   get_ir();
+  update_display();
   if ((btn.isPressed() && current - last_mode >= DELAY_MODE ) or (ir_code == irOk && current - last_mode >= DELAY_MODE)){
     last_mode = current;
     if (mode == NUM_MODES) {
@@ -628,7 +630,15 @@ void setEncoder(int value) {
   }
  }
 
- void update_display(int line, String LineContent){
-   lcd.setCursor(0,line);
-   lcd.print(LineContent);
+ void update_display(){
+   if (DispStrings[0] != Old_DispStrings[0]) {
+     lcd.setCursor(0,0);
+     lcd.print(DispStrings[0] + " ");
+     Old_DispStrings[0] = DispStrings[0];
+   }
+   if (DispStrings[1] != Old_DispStrings[1]) {
+     lcd.setCursor(14,0);
+     lcd.print(DispStrings[1]);
+     Old_DispStrings[1] = DispStrings[1];
+   }
  }
